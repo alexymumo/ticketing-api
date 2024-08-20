@@ -1,10 +1,12 @@
 package models
 
-type User struct {
-	ID         int64
-	FirstName  string
-	SecondName string
-	Email      string
-	Role       string // event owner / user
+import "time"
 
+type User struct {
+	UserID    int64      `json:"userid"`
+	FullName  string     `json:"fullname"`
+	Email     string     `json:"email"`
+	Password  string     `json:"password"`
+	Role      string     `json:"role"` // event owner && end users
+	CreatedAt *time.Time `json:"created_At"`
 }
