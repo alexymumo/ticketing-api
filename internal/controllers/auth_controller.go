@@ -20,6 +20,7 @@ func CreateUser(repo repository.AuthRepository) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		
 		if err := repo.SignUp(&user); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
 			return
