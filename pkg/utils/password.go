@@ -1,18 +1,14 @@
-package models
+package utils
 
-import (
-	"golang.org/x/crypto/bcrypt"
-)
+func HashPassword(password string) {
 
-type User struct {
-	UserID   int    `json:"userid"`
-	FullName string `json:"fullname"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"` // event owner && end users
-	//CreatedAt *time.Time `json:"created_At"`
 }
 
+func VerifyPassword() {
+
+}
+
+/*
 func (user *User) HashPassword(password string) error {
 	hashpassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -29,3 +25,4 @@ func (user *User) VerifyPassword(password string) error {
 	}
 	return nil
 }
+*/
