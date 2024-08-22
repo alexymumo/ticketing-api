@@ -1,10 +1,12 @@
 package models
 
 import (
+	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
+	gorm.Model
 	UserID   int    `json:"userid"`
 	FullName string `json:"fullname"`
 	Email    string `json:"email"`

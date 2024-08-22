@@ -33,9 +33,8 @@ func CreateUser(repo repository.AuthRepository) gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"message": "invalid json"})
 			return
 		}
-		user, err := repo.Register(user)
-		if err != nil {
-			ctx.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+		if err := repo.Register(user); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		ctx.JSON(http.StatusCreated, user)
@@ -50,11 +49,12 @@ func LoginUser(repo repository.AuthRepository) gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		token, err := repo.Login(loginInput.Email, loginInput.Password)
-		if err != nil {
+		//token, err := repo.Login(loginInput.Email, loginInput.Password)
+		/*if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": ""})
 			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{"token": token})
+		*/
 	}
 }
