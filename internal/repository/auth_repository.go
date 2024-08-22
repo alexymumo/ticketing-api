@@ -3,7 +3,7 @@ package repository
 import (
 	"events/internal/models"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type AuthRepository interface {
@@ -20,7 +20,7 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 }
 
 func (repo *authrepository) Register(user models.User) error {
-	return repo.db.Create(user).Error
+	return repo.db.Create(&user).Error
 }
 
 func (repo *authrepository) Login(email string) (*models.User, error) {
