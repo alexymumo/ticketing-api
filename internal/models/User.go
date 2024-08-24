@@ -1,33 +1,18 @@
 package models
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
 	gorm.Model
-	UserID   int    `gorm si json:"userid"`
-	FullName string `json:"fullname"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"` // event owner && end users
-	//CreatedAt *time.Time `json:"created_At"`
-}
-
-func (user *User) HashPassword(password string) error {
-	hashpassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	user.Password = string(hashpassword)
-	return nil
-}
-
-func (user *User) VerifyPassword(password string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return err
-	}
-	return nil
+	UserID    int    `gorm:"primaryKey" json:"userid"`
+	FullName  string `gorm:"not null" json:"fullname"`
+	Email     string `gorm:"unique" json:"email"`
+	Password  string `gorm:"not null" json:"password"`
+	Role      string `gorm:"not null" json:"role"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
