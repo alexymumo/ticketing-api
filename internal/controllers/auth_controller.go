@@ -3,21 +3,15 @@ package controllers
 import (
 	"events/internal/models"
 	"events/internal/repository"
+	"events/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type LoginInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type RegisterInput struct {
-	FullName string `json:"fullname"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func Ping() gin.HandlerFunc {
@@ -28,12 +22,11 @@ func Ping() gin.HandlerFunc {
 func CreateUser(repo repository.AuthRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var user models.User
-		//var register RegisterInput
 		if err := ctx.ShouldBindJSON(&user); err != nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"message": "invalid json"})
 			return
 		}
-		if err := repo.Register(user); err != nil {
+		if err := repo.Register(&user); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -44,17 +37,22 @@ func CreateUser(repo repository.AuthRepository) gin.HandlerFunc {
 func LoginUser(repo repository.AuthRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var loginInput LoginInput
-		//var user models.User
+
+		var user models.User
 		if err := ctx.ShouldBindJSON(&loginInput); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		//token, err := repo.Login(loginInput.Email, loginInput.Password)
-		/*if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": ""})
+		result, token, err := repo.Login(user.Email, user.Password)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"token": token})
-		*/
+		if !utils.VerifyPassword(loginInput.Password, user.Password) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"message": "Logged in", "user": result, "token": token})
 	}
 }

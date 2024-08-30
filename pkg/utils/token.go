@@ -1,13 +1,12 @@
 package utils
 
 import (
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-var jwtSecret = []byte(os.Getenv("SECRET_KEY"))
+var jwtSecret = []byte("ETEAAREAAFD1212")
 
 type Claims struct {
 	Email string `json:"email"`
@@ -22,7 +21,7 @@ func GenerateToken(email string) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString("1212AFDAFADFDAF")
 	if err != nil {
 		return "", nil
 	}
