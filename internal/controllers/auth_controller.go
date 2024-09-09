@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"events/internal/models"
-	"events/internal/repository"
 	"events/pkg/utils"
 	"net/http"
 	"time"
@@ -46,49 +45,7 @@ func Register(db *sql.DB) gin.HandlerFunc {
 		ctx.JSON(200, gin.H{"message": "registered successfully"})
 	}
 }
-func CreateUser(repo repository.AuthRepository) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var user models.User
-		if err := ctx.ShouldBindJSON(&user); err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"message": "invalid json"})
-			return
-		}
-		if err := repo.Register(&user); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		ctx.JSON(http.StatusCreated, user)
-	}
-}
 
-func LoginUser(repo repository.AuthRepository) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var loginInput LoginInput
-		var user models.User
-
-		if err := ctx.ShouldBindJSON(&loginInput); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		users, err := repo.Login(user.Email)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		if !utils.VerifyPassword(users.Password, loginInput.Password) {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		token, err := utils.GenerateToken(user.Email)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
-			return
-		}
-
-		ctx.JSON(http.StatusOK, gin.H{"user": token})
-	}
-}
 func SignIn(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var loginInput LoginInput
