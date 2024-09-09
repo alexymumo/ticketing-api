@@ -1,9 +1,8 @@
-CREATE TABLE `users`(
+CREATE TABLE `user`(
     `userid` int AUTO_INCREMENT PRIMARY KEY NOT NULL,
     `fullname` varchar(255) NOT NULL,
     `email` varchar(255) NOT NULL UNIQUE,
-    `password` varchar(255) NOT NULL,
-    `role` ENUM('Seller','User') DEFAULT 'User'  
+    `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8;
 

@@ -1,21 +1,24 @@
 package database
 
 import (
-	"events/internal/models"
+	"database/sql"
 	"fmt"
+	"log"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func Connect() *gorm.DB {
-	dsn := "root:1234@tcp(127.0.0.1:3306)/ticketdb?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+var db *sql.DB
+
+func Connect() *sql.DB {
+	var err error
+	db, err = sql.Open("mysql", "root:1234@tcp(127.0.0.1:3306)/ticketdb")
 	if err != nil {
-		fmt.Println("connected successfully")
-	} else {
-		fmt.Println("failed to connect")
+		log.Fatal(err)
 	}
-	db.AutoMigrate(&models.User{})
+	if err := db.Ping(); err != nil {
+		return nil
+	}
+	fmt.Println("Connected to db")
 	return db
 }

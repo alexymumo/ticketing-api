@@ -14,10 +14,11 @@ type Claims struct {
 }
 
 func GenerateToken(email string) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -41,3 +42,7 @@ func VerifyToken(tokenString string) (*Claims, error) {
 	}
 	return claims, nil
 }
+
+/*
+curl -X POST 'http://localhost:8080/v1/auth/register' -d '{"fullname":"Test test","email":"test@gmail.com","password":"1234"}'
+*/
