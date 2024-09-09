@@ -42,7 +42,7 @@ func Register(db *sql.DB) gin.HandlerFunc {
 			ctx.JSON(500, gin.H{"error": "failed to register user"})
 			return
 		}
-		ctx.JSON(200, gin.H{"message": "registered successfully"})
+		ctx.JSON(http.StatusOK, gin.H{ "message": "registered successfully"})
 	}
 }
 
@@ -83,6 +83,6 @@ func SignIn(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(200, gin.H{"token": tokenString})
+		ctx.JSON(http.StatusOK, gin.H{"token": tokenString})
 	}
 }

@@ -10,5 +10,5 @@ import (
 func AuthRoutes(route *gin.Engine) {
 	route.POST("v1/auth/signup", controllers.Register(database.Connect()))
 	route.POST("v1/auth/signin", controllers.SignIn(database.Connect()))
-	route.GET("v1/auth/test", controllers.Ping())
+	route.GET("v1/auth/ping", controllers.Ping())
 }

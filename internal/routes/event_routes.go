@@ -9,6 +9,6 @@ import (
 func EventRoutes(route *gin.Engine) {
 	route.POST("v1/event/create", controllers.CreateEvent())
 	route.DELETE("v1/event/delete", controllers.DeleteEvent())
-	route.GET("v1/event/events", controllers.GetEvents())
-	route.PUT("v1/event/update", controllers.UpdateEvent())
+	route.GET("v1/event/events", controllers.GetEvents()) //
+	route.PUT("v1/event/update", controllers.UpdateEvent()) //owner
 }
