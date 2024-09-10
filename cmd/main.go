@@ -10,7 +10,16 @@ import (
 func main() {
 	database.Connect()
 	route := gin.Default()
-	route.Use(gin.Logger())
 	routes.AuthRoutes(route)
+
+	/*
+		protected := route.Group("/")
+		protected.Use(middlewares.AuthMiddleware())
+		{
+			routes.EventRoutes(route)
+		}
+	*/
+	route.Use(gin.Logger())
+
 	route.Run(":8000")
 }

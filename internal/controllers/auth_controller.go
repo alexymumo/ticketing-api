@@ -42,14 +42,36 @@ func Register(db *sql.DB) gin.HandlerFunc {
 			ctx.JSON(500, gin.H{"error": "failed to register user"})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{ "message": "registered successfully"})
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "registered successfully",
+			"user":    user,
+		})
+	}
+}
+
+func GetUsers(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var user models.User
+		if err := ctx.ShouldBindJSON(&user); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		query, err := db.Query("SELECT * FROM user")
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(400, gin.H{"error": "no users"})
+			} else {
+				ctx.JSON(400, gin.H{"error": "no users found"})
+			}
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"users": query})
 	}
 }
 
 func SignIn(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var loginInput LoginInput
-		//var user models.User
 		if err := ctx.ShouldBindJSON(&loginInput); err != nil {
 			ctx.JSON(500, gin.H{"error": err.Error()})
 			return

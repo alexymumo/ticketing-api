@@ -20,3 +20,13 @@ create table `event` (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 
+
+create table `ticket` (
+    `ticketid` int AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    FOREIGN KEY(userid) references (user),
+    FOREIGN KEY(eventid) references (event),
+    `total` float64,
+    `status` boolean
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+
