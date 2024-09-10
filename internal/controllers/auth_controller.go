@@ -49,23 +49,41 @@ func Register(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+func DeleteUser(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userid := ctx.Param("userid")
+		_, err := db.Exec("DELETE FROM user WHERE userid = ?", userid)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"message": "successfuly deleted"})
+
+	}
+}
+
 func GetUsers(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var user models.User
-		if err := ctx.ShouldBindJSON(&user); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		query, err := db.Query("SELECT * FROM user")
+		var users []models.User
+		row, err := db.Query("SELECT userid, fullname, email, password FROM user")
 		if err != nil {
-			if err == sql.ErrNoRows {
-				ctx.JSON(400, gin.H{"error": "no users"})
-			} else {
-				ctx.JSON(400, gin.H{"error": "no users found"})
-			}
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query db"})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"users": query})
+		defer row.Close()
+		for row.Next() {
+			var user models.User
+			if err := row.Scan(&user.UserID, &user.FullName, &user.Email, &user.Password); err != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query db"})
+				return
+			}
+			users = append(users, user)
+		}
+		if err := row.Err(); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get data"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"users": users})
 	}
 }
 
