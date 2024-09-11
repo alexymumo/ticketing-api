@@ -22,7 +22,7 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 func TestDeleteUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
-		t.Fatal("error occurred", err)
+		t.Fatalf("error '%s' occurred when opening stub connection", err)
 	}
 	defer db.Close()
 	mock.ExpectExec("DELETE FROM user WHERE userid = ?").WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
@@ -41,5 +41,3 @@ func TestGetAllUsers(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 
 }
-
-
