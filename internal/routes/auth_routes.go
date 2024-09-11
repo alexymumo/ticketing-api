@@ -16,6 +16,7 @@ func Routes() *gin.Engine {
 		auth.POST("/signin", controllers.SignIn(database.Connect()))
 		auth.GET("/users", controllers.GetUsers(database.Connect()))
 		auth.DELETE("/user/:userid", controllers.DeleteUser(database.Connect()))
+		auth.PUT("/user/:userid", controllers.UpdateUser(database.Connect()))
 		auth.GET("/ping", controllers.Ping())
 	}
 	// protected routes

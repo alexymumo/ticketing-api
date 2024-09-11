@@ -62,6 +62,19 @@ func DeleteUser(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+func UpdateUser(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userid := ctx.Param("userid")
+		var user models.User
+		_, err := db.Exec("UPDATE user SET fullname = ?,email = ?,password = ? WHERE userid = ?", user.FullName, user.Email, user.Password, userid)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
+			return
+		}
+		ctx.JSON(http.StatusOK, "updated successfully")
+	}
+}
+
 func GetUsers(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var users []models.User

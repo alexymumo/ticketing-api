@@ -25,17 +25,34 @@ func TestDeleteUser(t *testing.T) {
 		t.Fatalf("error '%s' occurred when opening stub connection", err)
 	}
 	defer db.Close()
-	mock.ExpectExec("DELETE FROM user WHERE userid = ?").WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("DELETE FROM user WHERE userid = ?").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
 	router := SetupRouter(db)
 
 	r, _ := http.NewRequest("DELETE", "/user/1", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusOK, w.Code)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there are unfulfilled expectations: %s", err)
+	}
+}
+
+func TestRegister(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("error '%s' occurred when opening stub connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("INSERT INTO user").WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
 }
 
 func TestGetAllUsers(t *testing.T) {
-
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("error '%s' occurred when opening stub connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("SELECT * FROM user")
 }
 
 func TestUpdateUser(t *testing.T) {
