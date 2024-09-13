@@ -1,15 +1,15 @@
 package models
 
 type Event struct {
-	EventID     int64   `json:"eventid"`
-	Title       string  `json:"title"`
-	ImageUrl    string  `json:"imageurl"`
-	Date        string  `json:"date"`
-	Venue       string  `json:"venue"`
-	Description string  `json:"description"`
-	Time        string  `json:"time"`
-	Amount      float64 `json:"amount"`
-	Capacity    int     `json:"capacity"`
+	EventID     int64  `json:"eventid"`
+	Title       string `json:"title"`
+	ImageUrl    string `json:"imageurl"`
+	Date        string `json:"date"`
+	Venue       string `json:"venue"`
+	Description string `json:"description"`
+	Time        string `json:"time"`
+	Amount      string `json:"amount"`
+	Capacity    string `json:"capacity"`
 }
 
 type Location struct {
