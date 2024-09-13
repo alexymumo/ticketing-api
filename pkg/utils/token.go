@@ -22,7 +22,7 @@ func GenerateToken(email string) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString("1212AFDAFADFDAF")
+	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
 		return "", nil
 	}
@@ -42,7 +42,3 @@ func VerifyToken(tokenString string) (*Claims, error) {
 	}
 	return claims, nil
 }
-
-/*
-curl -X POST 'http://localhost:8080/v1/auth/register' -d '{"fullname":"Test test","email":"test@gmail.com","password":"1234"}'
-*/

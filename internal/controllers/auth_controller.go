@@ -5,19 +5,14 @@ import (
 	"events/internal/models"
 	"events/pkg/utils"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
-
-var jwtSecret = []byte("ETEAAREAAFD1212")
 
 func Ping() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -32,9 +27,8 @@ func Register(db *sql.DB) gin.HandlerFunc {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
-		hashedpassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		hashedpassword, err := utils.HashPassword(user.Password)
 		if err != nil {
-			ctx.JSON(500, gin.H{"error": "failed to hash password"})
 			return
 		}
 		_, err = db.Exec("INSERT INTO user(fullname,email,password) VALUES (?,?,?)", user.FullName, user.Email, hashedpassword)
@@ -117,25 +111,38 @@ func SignIn(db *sql.DB) gin.HandlerFunc {
 			}
 			return
 		}
-		err = bcrypt.CompareHashAndPassword([]byte(storedpassword), []byte(loginInput.Password))
-		if err != nil {
-			ctx.JSON(400, gin.H{"error": "invalid password"})
+		checkPassword := utils.VerifyPassword(storedpassword, loginInput.Password)
+		if !checkPassword {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid password"})
 			return
 		}
-		expirationTime := time.Now().Add(24 * time.Hour)
-		claims := &utils.Claims{
-			Email: loginInput.Email,
-			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: expirationTime.Unix(),
-			},
-		}
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		tokenString, err := token.SignedString(jwtSecret)
+		token, err := utils.GenerateToken(loginInput.Email)
 		if err != nil {
-			ctx.JSON(500, gin.H{"error": "failed to generate token"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generated token"})
 			return
 		}
+		/*
+				err = bcrypt.CompareHashAndPassword([]byte(storedpassword), []byte(loginInput.Password))
+				if err != nil {
+					ctx.JSON(400, gin.H{"error": "invalid password"})
+					return
+				}
 
-		ctx.JSON(http.StatusOK, gin.H{"token": tokenString})
+			expirationTime := time.Now().Add(24 * time.Hour)
+			claims := &utils.Claims{
+				Email: loginInput.Email,
+				StandardClaims: jwt.StandardClaims{
+					ExpiresAt: expirationTime.Unix(),
+				},
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+			tokenString, err := token.SignedString(jwtSecret)
+			if err != nil {
+				ctx.JSON(500, gin.H{"error": "failed to generate token"})
+				return
+			}
+		*/
+
+		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
