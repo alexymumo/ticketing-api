@@ -2,11 +2,15 @@ package routes
 
 import (
 	"events/internal/controllers"
+	"events/internal/repository"
+	"events/pkg/database"
 
 	"github.com/gin-gonic/gin"
 )
 
 func AuthRoutes(route *gin.Engine) {
-	route.POST("v1/auth/register", controllers.CreateUser)
-	route.POST("v1/auth/login", controllers.LoginUser)
+	repo := repository.NewAuthRepository(database.Connect())
+	route.POST("v1/auth/register", controllers.CreateUser(repo))
+	route.POST("v1/auth/login", controllers.LoginUser(repo))
+	route.GET("v1/auth/test", controllers.Ping())
 }
