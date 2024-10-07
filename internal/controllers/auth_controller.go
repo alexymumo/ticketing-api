@@ -121,28 +121,6 @@ func SignIn(db *sql.DB) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generated token"})
 			return
 		}
-		/*
-				err = bcrypt.CompareHashAndPassword([]byte(storedpassword), []byte(loginInput.Password))
-				if err != nil {
-					ctx.JSON(400, gin.H{"error": "invalid password"})
-					return
-				}
-
-			expirationTime := time.Now().Add(24 * time.Hour)
-			claims := &utils.Claims{
-				Email: loginInput.Email,
-				StandardClaims: jwt.StandardClaims{
-					ExpiresAt: expirationTime.Unix(),
-				},
-			}
-			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-			tokenString, err := token.SignedString(jwtSecret)
-			if err != nil {
-				ctx.JSON(500, gin.H{"error": "failed to generate token"})
-				return
-			}
-		*/
-
 		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
