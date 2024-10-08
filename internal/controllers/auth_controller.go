@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"database/sql"
 	"events/internal/models"
-	"events/internal/repository"
 	"events/pkg/utils"
 	"net/http"
 
@@ -10,49 +10,117 @@ import (
 )
 
 type LoginInput struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func Ping() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"data": "Working"})
+		ctx.JSON(http.StatusOK, gin.H{"data": "Pong"})
 	}
 }
-func CreateUser(repo repository.AuthRepository) gin.HandlerFunc {
+
+func Register(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var user models.User
 		if err := ctx.ShouldBindJSON(&user); err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"message": "invalid json"})
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
-		if err := repo.Register(&user); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		hashedpassword, err := utils.HashPassword(user.Password)
+		if err != nil {
 			return
 		}
-		ctx.JSON(http.StatusCreated, user)
+		_, err = db.Exec("INSERT INTO user(fullname,email,password) VALUES (?,?,?)", user.FullName, user.Email, hashedpassword)
+		if err != nil {
+			ctx.JSON(500, gin.H{"error": "failed to register user"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "registered successfully",
+			"user":    user,
+		})
 	}
 }
 
-func LoginUser(repo repository.AuthRepository) gin.HandlerFunc {
+func DeleteUser(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userid := ctx.Param("userid")
+		_, err := db.Exec("DELETE FROM user WHERE userid = ?", userid)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"message": "successfuly deleted"})
+
+	}
+}
+
+func UpdateUser(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userid := ctx.Param("userid")
+		var user models.User
+		_, err := db.Exec("UPDATE user SET fullname = ?,email = ?,password = ? WHERE userid = ?", user.FullName, user.Email, user.Password, userid)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
+			return
+		}
+		ctx.JSON(http.StatusOK, "updated successfully")
+	}
+}
+
+func GetUsers(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var users []models.User
+		row, err := db.Query("SELECT userid, fullname, email, password FROM user")
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query db"})
+			return
+		}
+		defer row.Close()
+		for row.Next() {
+			var user models.User
+			if err := row.Scan(&user.UserID, &user.FullName, &user.Email, &user.Password); err != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query db"})
+				return
+			}
+			users = append(users, user)
+		}
+		if err := row.Err(); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get data"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"users": users})
+	}
+}
+
+func SignIn(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var loginInput LoginInput
-
-		var user models.User
 		if err := ctx.ShouldBindJSON(&loginInput); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		result, token, err := repo.Login(user.Email, user.Password)
+		var storedpassword string
+		err := db.QueryRow("SELECT password FROM user WHERE email = ?", loginInput.Email).Scan(&storedpassword)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			if err == sql.ErrNoRows {
+				ctx.JSON(400, gin.H{"error": "invalid email or password"})
+			} else {
+				ctx.JSON(500, gin.H{"error": "failed to get user"})
+			}
 			return
 		}
-		if !utils.VerifyPassword(loginInput.Password, user.Password) {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		checkPassword := utils.VerifyPassword(storedpassword, loginInput.Password)
+		if !checkPassword {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid password"})
 			return
 		}
-
-		ctx.JSON(http.StatusOK, gin.H{"message": "Logged in", "user": result, "token": token})
+		token, err := utils.GenerateToken(loginInput.Email)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generated token"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
