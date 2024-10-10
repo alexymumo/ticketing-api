@@ -24,9 +24,18 @@ func Routes() *gin.Engine {
 	{
 		event.POST("/event", controllers.CreateEvent(database.Connect()))
 		event.GET("/events", controllers.GetEvents(database.Connect()))
-		event.DELETE("/event/:eventid", controllers.DeleteEvent())
-		event.PUT("/event", controllers.UpdateEvent())
+		event.DELETE("/event/:eventid", controllers.DeleteEvent(database.Connect()))
+		event.PUT("/event/:eventid", controllers.UpdateEvent(database.Connect()))
 		event.GET("/test", controllers.Test())
+	}
+
+	ticket := route.Group("/ticket", middlewares.AuthMiddleware())
+	{
+		ticket.GET("/test", controllers.Pong())
+		ticket.POST("/create")
+		ticket.GET("/tickets")
+		ticket.DELETE("/:ticketid")
+		ticket.PUT("/:ticketid")
 	}
 	return route
 }
