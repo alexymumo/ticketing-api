@@ -76,18 +76,28 @@ func CreateEvent(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
-func UpdateEvent() gin.HandlerFunc {
-	return func(ctx *gin.Context) {}
-
-}
-
-func DeleteEvent() gin.HandlerFunc {
-	return func(ctx *gin.Context) {}
-}
-
-func GetEventById() gin.HandlerFunc {
+func UpdateEvent(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		var event models.Event
+		eventid := ctx.Param("eventid")
+		_, err := db.Exec("UPDATE event SET title = ? WHERE eventid = ?", event.Title, eventid)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, "failed to update event")
+			return
+		}
+		ctx.JSON(http.StatusOK, "updated successfully")
+	}
+}
 
+func DeleteEvent(db *sql.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		eventid := ctx.Param("eventid")
+		_, err := db.Exec("DELETE FROM event WHERE eventid = ?", eventid)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, "failed to delete event")
+			return
+		}
+		ctx.JSON(http.StatusOK, "deleted event successfully")
 	}
 }
 
