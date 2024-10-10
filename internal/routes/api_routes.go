@@ -36,6 +36,7 @@ func Routes() *gin.Engine {
 		ticket.GET("/tickets")
 		ticket.DELETE("/:ticketid")
 		ticket.PUT("/:ticketid")
+		ticket.GET("/available")
 	}
 	return route
 }
