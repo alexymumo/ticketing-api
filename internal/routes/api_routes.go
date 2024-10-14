@@ -19,7 +19,7 @@ func Routes() *gin.Engine {
 		auth.PUT("/user/:userid", controllers.UpdateUser(database.Connect()))
 		auth.GET("/ping", controllers.Ping())
 	}
-	// protected routes
+
 	event := route.Group("/event", middlewares.AuthMiddleware())
 	{
 		event.POST("/event", controllers.CreateEvent(database.Connect()))
@@ -32,11 +32,16 @@ func Routes() *gin.Engine {
 	ticket := route.Group("/ticket", middlewares.AuthMiddleware())
 	{
 		ticket.GET("/test", controllers.Pong())
-		ticket.POST("/create")
+		ticket.POST("/create", controllers.CreateTicket(database.Connect()))
 		ticket.GET("/tickets")
 		ticket.DELETE("/:ticketid")
 		ticket.PUT("/:ticketid")
-		ticket.GET("/available")
+		ticket.GET("/available/:eventid", controllers.AvailableTickets(database.Connect()))
+	}
+
+	payment := route.Group("/payment", middlewares.AuthMiddleware())
+	{
+		payment.POST("")
 	}
 	return route
 }

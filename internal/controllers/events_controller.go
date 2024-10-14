@@ -92,9 +92,18 @@ func UpdateEvent(db *sql.DB) gin.HandlerFunc {
 func DeleteEvent(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		eventid := ctx.Param("eventid")
-		_, err := db.Exec("DELETE FROM event WHERE eventid = ?", eventid)
+		result, err := db.Exec("DELETE FROM event WHERE eventid = ?", eventid)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, "failed to delete event")
+			return
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "no affected rows"})
+			return
+		}
+		if rowsAffected == 0 {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "event not found"})
 			return
 		}
 		ctx.JSON(http.StatusOK, "deleted event successfully")
