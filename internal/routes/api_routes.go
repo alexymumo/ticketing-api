@@ -10,7 +10,7 @@ import (
 
 func Routes() *gin.Engine {
 	route := gin.Default()
-	auth := route.Group("/auth")
+	auth := route.Group("/api/v1")
 	{
 		auth.POST("/signup", controllers.Register(database.Connect()))
 		auth.POST("/signin", controllers.SignIn(database.Connect()))
@@ -20,7 +20,7 @@ func Routes() *gin.Engine {
 		auth.GET("/ping", controllers.Ping())
 	}
 
-	event := route.Group("/event", middlewares.AuthMiddleware())
+	event := route.Group("/api/v1", middlewares.AuthMiddleware())
 	{
 		event.POST("/event", controllers.CreateEvent(database.Connect()))
 		event.GET("/events", controllers.GetEvents(database.Connect()))
@@ -29,19 +29,18 @@ func Routes() *gin.Engine {
 		event.GET("/test", controllers.Test())
 	}
 
-	ticket := route.Group("/ticket", middlewares.AuthMiddleware())
+	ticket := route.Group("/api/v1", middlewares.AuthMiddleware())
 	{
-		ticket.GET("/test", controllers.Pong())
+		ticket.GET("/pong", controllers.Pong())
 		ticket.POST("/create", controllers.CreateTicket(database.Connect()))
-		ticket.GET("/tickets")
-		ticket.DELETE("/:ticketid")
+		ticket.DELETE("/:ticketid", controllers.CancelTicket())
 		ticket.PUT("/:ticketid")
 		ticket.GET("/available/:eventid", controllers.AvailableTickets(database.Connect()))
 	}
 
-	payment := route.Group("/payment", middlewares.AuthMiddleware())
+	payment := route.Group("/api/v1", middlewares.AuthMiddleware())
 	{
-		payment.POST("")
+		payment.POST("/pay")
 	}
 	return route
 }

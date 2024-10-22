@@ -14,6 +14,12 @@ func Pong() gin.HandlerFunc {
 	}
 }
 
+func CancelTicket() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"message": "cancelled successfully"})
+	}
+}
+
 func AvailableTickets(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		eventid := ctx.Param("eventid")
@@ -35,12 +41,17 @@ func AvailableTickets(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+func UpdateTicket() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}
+
 func CreateTicket(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		eventid := ctx.Param("eventid")
-		userid, exists := ctx.Get("id")
-		if !exists {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		var ticket models.Ticket
+		if err := ctx.ShouldBindJSON(&ticket); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 			return
 		}
 		tx, err := db.Begin()
@@ -48,16 +59,10 @@ func CreateTicket(db *sql.DB) gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to begin transaction"})
 			return
 		}
-		defer func() {
-			if p := recover(); p != nil {
-				tx.Rollback()
-				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to rollback tx"})
-			}
-		}()
+		defer tx.Rollback()
 		var capacity int
-		query := "SELECT capacity FROM event WHERE eventid = ? FOR UPDATE"
-		err = tx.QueryRow(query, eventid).Scan(&capacity)
-		if err != nil {
+		query := "SELECT capacity FROM event WHERE eventid = ?"
+		if err := tx.QueryRow(query, ticket.EventId).Scan(&capacity); err != nil {
 			if err == sql.ErrNoRows {
 				tx.Rollback()
 				ctx.JSON(http.StatusNotFound, gin.H{"error": "not found"})
@@ -68,39 +73,33 @@ func CreateTicket(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 		if capacity <= 0 {
-			tx.Rollback()
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "tickets sold out"})
 			return
 		}
+
 		updateQuery := "UPDATE event SET capacity = capacity - 1 WHERE eventid = ?"
-		_, err = tx.Exec(updateQuery, eventid)
+		_, err = tx.Exec(updateQuery, ticket.EventId)
 		if err != nil {
 			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update capacity"})
 			return
 		}
+
 		queryInsert := "INSERT into ticket (eventid,userid) VALUES (?,?)"
-		result, err := tx.Exec(queryInsert, eventid, userid)
+		_, err = tx.Exec(queryInsert, ticket.EventId, ticket.UserID)
 		if err != nil {
-			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to to create a ticket"})
 			return
 		}
-		ticketId, err := result.LastInsertId()
-		if err != nil {
-			tx.Rollback()
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save user"})
-			return
-		}
+		//ticketId, err := result.LastInsertId()
+		/*
+			if err != nil {
+				tx.Rollback()
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save user"})
+				return
+			}*/
 		if err := tx.Commit(); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed"})
-			return
-		}
-		var ticket models.Ticket
-		retrieve := "SELECT eventid,userid FROM ticket WHERE ticketid = ?"
-		err = db.QueryRow(retrieve, ticketId).Scan(&ticket.TicketID, &ticket.UserID, &ticket.EventId)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query ticket"})
 			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{

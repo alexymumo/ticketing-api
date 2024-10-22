@@ -20,9 +20,11 @@ create table `event` (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 
-
+drop table ticket if exists;
 create table `ticket` (
     `ticketid` int AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    userid int not null,
+    eventid int not null,
     FOREIGN KEY(userid) references user(userid),
     FOREIGN KEY(eventid) references event(eventid)
 )
