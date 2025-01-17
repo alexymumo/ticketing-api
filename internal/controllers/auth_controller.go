@@ -31,7 +31,7 @@ func Register(db *sql.DB) gin.HandlerFunc {
 		if err != nil {
 			return
 		}
-		_, err = db.Exec("INSERT INTO user(fullname,email,password) VALUES (?,?,?)", user.FullName, user.Email, hashedpassword)
+		_, err = db.Exec("INSERT INTO user(fullname,email,phonenumber,password) VALUES (?,?,?,?)", user.FullName, user.Email, user.PhoneNumber, hashedpassword)
 		if err != nil {
 			ctx.JSON(500, gin.H{"error": "failed to register user"})
 			return
@@ -52,7 +52,6 @@ func DeleteUser(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{"message": "successfuly deleted"})
-
 	}
 }
 
@@ -72,7 +71,7 @@ func UpdateUser(db *sql.DB) gin.HandlerFunc {
 func GetUsers(db *sql.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var users []models.User
-		row, err := db.Query("SELECT userid, fullname, email, password FROM user")
+		row, err := db.Query("SELECT userid, fullname, email,phonenumber, password FROM user")
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query db"})
 			return
@@ -80,7 +79,7 @@ func GetUsers(db *sql.DB) gin.HandlerFunc {
 		defer row.Close()
 		for row.Next() {
 			var user models.User
-			if err := row.Scan(&user.UserID, &user.FullName, &user.Email, &user.Password); err != nil {
+			if err := row.Scan(&user.UserID, &user.FullName, &user.Email, &user.PhoneNumber, &user.Password); err != nil {
 				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query db"})
 				return
 			}
