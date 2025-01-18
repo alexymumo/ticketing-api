@@ -3,11 +3,20 @@ package main
 import (
 	"events/internal/routes"
 	"events/pkg/database"
+
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	database.Connect()
-	r := routes.Routes()
+func InitRoutes(route *gin.Engine) {
+	routes.AuthRoutes(route)
+	routes.EventRoutes(route)
+	routes.TicketRoutes(route)
+}
 
-	r.Run(":8000")
+func main() {
+	gin.SetMode(gin.DebugMode)
+	database.Connect()
+	router := gin.Default()
+	InitRoutes(router)
+	router.Run(":8000")
 }
