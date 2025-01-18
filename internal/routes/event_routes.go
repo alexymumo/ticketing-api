@@ -8,9 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func EventRoutes() *gin.Engine {
-	route := gin.Default()
-
+func EventRoutes(route *gin.Engine) {
 	event := route.Group("/api/v1", middlewares.AuthMiddleware())
 	{
 		event.POST("/event", controllers.CreateEvent(database.Connect()))
@@ -19,5 +17,4 @@ func EventRoutes() *gin.Engine {
 		event.PUT("/event/:eventid", controllers.UpdateEvent(database.Connect()))
 		event.GET("/test", controllers.Test())
 	}
-	return route
 }

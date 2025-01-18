@@ -8,8 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TicketRoutes() *gin.Engine {
-	route := gin.Default()
+func TicketRoutes(route *gin.Engine) {
 	ticket := route.Group("/api/v1", middlewares.AuthMiddleware())
 	{
 		ticket.GET("/pong", controllers.Pong())
@@ -18,5 +17,4 @@ func TicketRoutes() *gin.Engine {
 		ticket.PUT("/:ticketid")
 		ticket.GET("/available/:eventid", controllers.AvailableTickets(database.Connect()))
 	}
-	return route
 }
