@@ -7,6 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func InitRedis() {
+	
+}
+
 func InitRoutes(route *gin.Engine) {
 	routes.AuthRoutes(route)
 	routes.EventRoutes(route)
