@@ -7,5 +7,3 @@
 - Mock
 - Redis
 - JWT
-- MPESA
-- Paystack

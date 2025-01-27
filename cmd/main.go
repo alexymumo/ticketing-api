@@ -2,14 +2,11 @@ package main
 
 import (
 	"events/internal/routes"
+	"events/pkg/config"
 	"events/pkg/database"
 
 	"github.com/gin-gonic/gin"
 )
-
-func InitRedis() {
-	
-}
 
 func InitRoutes(route *gin.Engine) {
 	routes.AuthRoutes(route)
@@ -18,6 +15,7 @@ func InitRoutes(route *gin.Engine) {
 }
 
 func main() {
+	config.InitRedis()
 	gin.SetMode(gin.DebugMode)
 	database.Connect()
 	router := gin.Default()

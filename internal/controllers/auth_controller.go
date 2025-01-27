@@ -3,8 +3,10 @@ package controllers
 import (
 	"database/sql"
 	"events/internal/models"
+	"events/pkg/config"
 	"events/pkg/utils"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -118,6 +120,11 @@ func SignIn(db *sql.DB) gin.HandlerFunc {
 		token, err := utils.GenerateToken(loginInput.Email)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generated token"})
+			return
+		}
+		err = config.RedisClient.Set(config.Ctx, token, loginInput.Email, time.Hour).Err()
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save token to redis"})
 			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{"token": token})
