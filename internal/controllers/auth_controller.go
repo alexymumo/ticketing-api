@@ -38,7 +38,7 @@ func Register(db *sql.DB) gin.HandlerFunc {
 			ctx.JSON(500, gin.H{"error": "failed to register user"})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{
+		ctx.JSON(http.StatusCreated, gin.H{
 			"message": "registered successfully",
 			"user":    user,
 		})
